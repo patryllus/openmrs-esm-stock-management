@@ -72,6 +72,7 @@ const BaseOperationDetails: React.FC<BaseOperationDetailsProps> = ({
   });
   const requisitionStockOperations = getRequisitionStockOperations(items);
   const operationType = operationFromString(operation.operationType);
+  const StockIssueOperationType = OperationType.STOCK_ISSUE_OPERATION_TYPE;
 
   const {
     handleSubmit,
@@ -95,11 +96,15 @@ const BaseOperationDetails: React.FC<BaseOperationDetailsProps> = ({
       />
     );
   }
-
+console.log("Model",model);
+console.log("Item",requisitionStockOperations);
   const handleSave = async (item: StockOperationDTO) => {
+    console.log("Here1");
     try {
       setIsSaving(true);
       const payload = createBaseOperationPayload(model, item, operationType);
+      console.log("Here");
+      console.log("Payload", payload);
       await onSave(payload);
     } catch (e) {
       // Show notification
@@ -186,7 +191,7 @@ const BaseOperationDetails: React.FC<BaseOperationDetailsProps> = ({
           />
         )}
 
-        {canEdit && !lockSource && operation?.hasSource && (
+        {canEdit && !lockSource && operation?.hasDestination && (
           <PartySelector
             controllerName="sourceUuid"
             name="sourceUuid"
@@ -201,21 +206,34 @@ const BaseOperationDetails: React.FC<BaseOperationDetailsProps> = ({
                 ? t("chooseASource", "Choose a source")
                 : t("chooseALocation", "Choose a location")
             }
-            invalid={!!errors.sourceUuid}
-            invalidText={errors.sourceUuid && errors?.sourceUuid?.message}
+            invalid={!!errors.destinationUuid}
+            invalidText={
+              errors.destinationUuid && errors?.destinationUuid?.message
+            }
             parties={sourcePartyList || []}
           />
         )}
-
-        {(!canEdit || isEditing || lockSource) && (
+        {(!canEdit || isEditing || lockSource) && StockIssueOperationType && (
           <TextInput
             id="sourceUuidLbl"
-            value={model?.sourceName ?? ""}
+            value={
+              requisitionStockOperations.map((item) =>
+                item.destinationName ? item.destinationName : ""
+              )[0]
+            }
             readOnly={true}
             labelText={operation?.hasDestination ? "From" : "From"}
           />
         )}
-        {canEdit && !lockDestination && operation?.hasDestination && (
+        {(!canEdit || isEditing || lockSource) && !StockIssueOperationType && (
+          <TextInput
+            id="sourceUuidLbl"
+            value={model?.destinationName ?? ""}
+            readOnly={true}
+            labelText={operation?.hasDestination ? "From" : "From"}
+          />
+        )}
+        {canEdit && !lockDestination && operation?.hasSource && (
           <PartySelector
             controllerName="destinationUuid"
             name="destinationUuid"
@@ -226,22 +244,35 @@ const BaseOperationDetails: React.FC<BaseOperationDetailsProps> = ({
                 ? t("chooseADestination", "Choose a destination")
                 : "Location"
             }
-            invalid={!!errors.destinationUuid}
+            invalid={!!errors.sourceUuid}
             invalidText={
-              errors.destinationUuid && errors?.destinationUuid?.message
+              errors.sourceUuid && errors?.sourceUuid?.message
             }
             parties={destinationPartyList || []}
           />
         )}
-
-        {(!canEdit || isEditing || lockDestination) && (
-          <TextInput
-            id="destinationUuidLbl"
-            value={model?.destinationName ?? ""}
-            readOnly={true}
-            labelText={operation?.hasSource ? "To" : "To"}
-          />
-        )}
+        {(!canEdit || isEditing || lockDestination) &&
+          StockIssueOperationType && (
+            <TextInput
+              id="destinationUuidLbl"
+              value={
+                requisitionStockOperations.map((item) =>
+                  item.sourceName ? item.sourceName : ""
+                )[0]
+              }
+              readOnly={true}
+              labelText={operation?.hasSource ? "To5" : "To"}
+            />
+          )}
+        {(!canEdit || isEditing || lockDestination) &&
+          !StockIssueOperationType && (
+            <TextInput
+              id="destinationUuidLbl"
+              value={model?.sourceName ?? ""}
+              readOnly={true}
+              labelText={operation?.hasSource ? "To5" : "To"}
+            />
+          )}
 
         {canEdit && (
           <UsersSelector
@@ -281,8 +312,21 @@ const BaseOperationDetails: React.FC<BaseOperationDetailsProps> = ({
             }
           />
         )}
-
-        {!canEdit && (
+        {!canEdit && StockIssueOperationType && (
+          <TextInput
+            id="responsiblePersonLbl"
+            value={
+              requisitionStockOperations.map((item) =>
+                item.responsiblePersonFamilyName
+                  ? `${item.responsiblePersonFamilyName} ${item.responsiblePersonGivenName}`
+                  : ""
+              )[0]
+            }
+            readOnly={true}
+            labelText={"Responsible Person"}
+          />
+        )}
+        {!canEdit && !StockIssueOperationType && (
           <TextInput
             id="responsiblePersonLbl"
             value={
