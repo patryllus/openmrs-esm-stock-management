@@ -24,6 +24,7 @@ import { showSnackbar } from "@openmrs/esm-framework";
 import { useTranslation } from "react-i18next";
 import styles from "./packaging-units.scss";
 import DeleteModalButton from "./packaging-units-delete-modal-button.component";
+import { closeOverlay } from "../../../core/components/overlay/hook";
 
 interface PackagingUnitsProps {
   isEditing?: boolean;
@@ -148,7 +149,9 @@ const PackagingUnits: React.FC<PackagingUnitsProps> = ({
           </TableContainer>
         )}
       />
-
+      <Button kind="secondary" onClick={closeOverlay}>
+        {t("cancel", "Cancel")}
+      </Button>
       <Button
         name="save"
         type="submit"
